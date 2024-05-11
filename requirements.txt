@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+mysql-connector-python
+passlib
+python-multipart
+aiofiles
+python-jose
+python-dotenv
+boto3
+loguru
+python-magic-bin
+bcrypt
