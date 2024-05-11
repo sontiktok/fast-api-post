@@ -48,4 +48,7 @@ def update(post_id: int, request: PostRequest, db: Session = Depends(get_db), cu
 #     await s3_upload(contents=contents, key=file_name)
 #     return {'file_name': file_name}
 
+@router.get('/search-category/{category}', response_model=List[PostResponse])
+def search_category(category: str,db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
+    return post_controller.search_category(category,db,current_user)
 

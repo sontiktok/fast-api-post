@@ -71,3 +71,11 @@ def update(db: Session, post_id: int, request: PostRequest, current_user: UserAu
         return post
     else:
         return None
+    
+def search_category(category,db: Session, current_user: UserAuth):
+    posts = db.query(DbPost).filter(DbPost.category == category).all()
+    liked_post_ids = {like.postId for like in db.query(DBLike).filter(DBLike.userId == current_user.id).all()}
+    for post in posts:
+        post.bookmark = post.id in liked_post_ids
+        post.image_key = server_create_presigned_url(AWS_BUCKET,post.image_key)
+    return posts
