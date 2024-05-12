@@ -52,3 +52,6 @@ def update(post_id: int, request: PostRequest, db: Session = Depends(get_db), cu
 def search_category(category: str,db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
     return post_controller.search_category(category,db,current_user)
 
+@router.get('/search-date/{date}', response_model=List[PostResponse])
+def search_date(date: str,db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
+    return post_controller.search_date(date,db,current_user)

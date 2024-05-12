@@ -9,6 +9,8 @@ from fastapi import status
 from services.s3_server import server_create_presigned_url
 from dotenv import load_dotenv
 import os
+from datetime import datetime
+import re
 
 load_dotenv()
 
@@ -31,7 +33,7 @@ def create(db: Session, request: PostRequest,current_user:UserAuth):
     image_key = request.image_key,
     caption = request.caption,
     category = request.category,
-    created_at = datetime.datetime.now(),
+    created_at = datetime.now(),
     user_id = current_user.id
   )
   db.add(new_post)
@@ -78,4 +80,28 @@ def search_category(category,db: Session, current_user: UserAuth):
     for post in posts:
         post.bookmark = post.id in liked_post_ids
         post.image_key = server_create_presigned_url(AWS_BUCKET,post.image_key)
+    return posts
+
+def search_date(date: str, db: Session, current_user: UserAuth):
+    # Chuẩn hóa định dạng ngày nhập vào
+    if re.match(r'\d{2}/\d{2}/\d{4}', date):
+        date = datetime.strptime(date, '%d/%m/%Y')
+    else:
+        date = datetime.strptime(date, '%d-%m-%Y')
+    
+    print(f"Searching up to: {date}")
+
+    # Truy vấn tất cả bài đăng được tạo từ ngày nhập vào trở về trước
+    posts = db.query(DbPost).filter(DbPost.created_at <= date).all()
+    print(f"Number of posts retrieved: {len(posts)}")
+
+    # Lấy danh sách các ID bài đăng mà người dùng hiện tại đã thích
+    liked_post_ids = {like.postId for like in db.query(DBLike).filter(DBLike.userId == current_user.id).all()}
+    print(f"Number of liked posts: {len(liked_post_ids)}")
+
+    # Đánh dấu bài đăng đã được thích và tạo URL ký tên trước cho hình ảnh
+    for post in posts:
+        post.bookmark = post.id in liked_post_ids
+        post.image_key = server_create_presigned_url(AWS_BUCKET, post.image_key)
+
     return posts
