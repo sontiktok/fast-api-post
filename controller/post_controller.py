@@ -9,7 +9,7 @@ from fastapi import status
 from services.s3_server import server_create_presigned_url
 from dotenv import load_dotenv
 import os
-from datetime import datetime
+from datetime import datetime,timedelta
 import re
 
 load_dotenv()
@@ -83,16 +83,13 @@ def search_category(category,db: Session, current_user: UserAuth):
     return posts
 
 def search_date(date: str, db: Session, current_user: UserAuth):
-    # Chuẩn hóa định dạng ngày nhập vào
-    if re.match(r'\d{2}/\d{2}/\d{4}', date):
-        date = datetime.strptime(date, '%d/%m/%Y')
-    else:
-        date = datetime.strptime(date, '%d-%m-%Y')
-    
-    print(f"Searching up to: {date}")
+    # Chuyển đổi ngày nhập vào từ chuỗi theo định dạng 'DD-MM-YYYY' thành datetime
+    search_date = datetime.strptime(date, '%d-%m-%Y')
+    next_day = search_date + timedelta(days=1)
+    print(f"Searching posts created on or before: {search_date}")
 
-    # Truy vấn tất cả bài đăng được tạo từ ngày nhập vào trở về trước
-    posts = db.query(DbPost).filter(DbPost.created_at <= date).all()
+    # Truy vấn tất cả bài đăng được tạo vào ngày nhập vào hoặc trước đó
+    posts = db.query(DbPost).filter(DbPost.created_at < next_day).all()
     print(f"Number of posts retrieved: {len(posts)}")
 
     # Lấy danh sách các ID bài đăng mà người dùng hiện tại đã thích
