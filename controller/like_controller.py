@@ -1,12 +1,8 @@
 from fastapi import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
 from db.models import DBLike
-from schema.user_schema import UserResponse
-from db.hashing import Hash
 from sqlalchemy.orm.session import Session
 from schema.user_schema import UserAuth
 
-import datetime
 
 
 def like_post(postId: int, db: Session, current_user: UserAuth):

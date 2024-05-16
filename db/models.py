@@ -1,5 +1,5 @@
 from .database import Base
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
@@ -8,7 +8,6 @@ class DbUser(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(255), index=True)  
-    # email = Column(String(255), index=True)     
     password = Column(String(255))
     created_at = Column(DateTime)             
     items = relationship('DbPost', back_populates='user')

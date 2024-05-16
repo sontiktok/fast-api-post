@@ -1,10 +1,10 @@
 from auth.oauth2 import get_current_user
-from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException, Query
 from sqlalchemy.orm import Session
 from schema.post_schema import PostRequest, PostResponse
 from db.database import get_db
 from controller import post_controller
-from typing import List
+from typing import List, Optional
 from schema.user_schema import UserAuth
 from validation.validation_file import validate_file, SUPPORTED_FILE_TYPES
 from uuid import uuid4
@@ -31,9 +31,20 @@ def create(request: PostRequest, db: Session = Depends(get_db),current_user: Use
 # @router.get('', response_model=List[PostResponse])
 # def posts(db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
 #     return post_controller.get_all(db,current_user)
+
+
+# @router.get('', response_model=List[PostResponse])
+# def posts(db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
+#     return post_controller.get_all(db,current_user)
 @router.get('', response_model=List[PostResponse])
-def posts(db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
-    return post_controller.get_all(db,current_user)
+def posts(
+    skip: int = Query(default=0),
+    limit: int = Query(default=9),
+    db: Session = Depends(get_db),
+    current_user: UserAuth = Depends(get_current_user)
+):
+    return post_controller.get_all(db, current_user, skip=skip, limit=limit)
+
 
 @router.post('/update/{post_id}', response_model=PostResponse)
 def update(post_id: int, request: PostRequest, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
@@ -55,3 +66,14 @@ def search_category(category: str,db: Session = Depends(get_db),current_user: Us
 @router.get('/search-date/{date}', response_model=List[PostResponse])
 def search_date(date: str,db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
     return post_controller.search_date(date,db,current_user)
+
+@router.get('/search', response_model=List[PostResponse])
+def search_posts(category: Optional[str] = None, date: Optional[str] = None, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+    if not category and not date:
+        return post_controller.get_all(db, current_user)
+    elif category and not date:
+        return post_controller.search_category(category, db, current_user)
+    elif date and not category:
+        return post_controller.search_date(date, db, current_user)
+    else:
+        return post_controller.search_by_category_and_date(category, date, db, current_user)

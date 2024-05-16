@@ -1,7 +1,5 @@
 from uuid import uuid4
 import boto3
-# from botocore.exceptions import ClientError
-# from loguru import logger
 from dotenv import load_dotenv
 import os
 

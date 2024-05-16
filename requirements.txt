@@ -9,5 +9,5 @@ python-jose
 python-dotenv
 boto3
 loguru
-python-magic-bin
+python-magic
 bcrypt
