@@ -8,7 +8,6 @@ from typing import List, Optional
 from schema.user_schema import UserAuth
 from validation.validation_file import validate_file, SUPPORTED_FILE_TYPES
 from uuid import uuid4
-# from services.s3_services import s3_upload,create_presigned_url
 from dotenv import load_dotenv
 import os
 
@@ -36,14 +35,14 @@ def create(request: PostRequest, db: Session = Depends(get_db),current_user: Use
 # @router.get('', response_model=List[PostResponse])
 # def posts(db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
 #     return post_controller.get_all(db,current_user)
-@router.get('', response_model=List[PostResponse])
-def posts(
-    skip: int = Query(default=0),
-    limit: int = Query(default=9),
-    db: Session = Depends(get_db),
-    current_user: UserAuth = Depends(get_current_user)
-):
-    return post_controller.get_all(db, current_user, skip=skip, limit=limit)
+# @router.get('', response_model=List[PostResponse])
+# def posts(
+#     skip: int = Query(default=0),
+#     limit: int = Query(default=9),
+#     db: Session = Depends(get_db),
+#     current_user: UserAuth = Depends(get_current_user)
+# ):
+#     return post_controller.get_all(db, current_user, skip=skip, limit=limit)
 
 
 @router.post('/update/{post_id}', response_model=PostResponse)
@@ -67,13 +66,43 @@ def search_category(category: str,db: Session = Depends(get_db),current_user: Us
 def search_date(date: str,db: Session = Depends(get_db),current_user: UserAuth = Depends(get_current_user)):
     return post_controller.search_date(date,db,current_user)
 
-@router.get('/search', response_model=List[PostResponse])
-def search_posts(category: Optional[str] = None, date: Optional[str] = None, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
-    if not category and not date:
-        return post_controller.get_all(db, current_user)
-    elif category and not date:
-        return post_controller.search_category(category, db, current_user)
-    elif date and not category:
-        return post_controller.search_date(date, db, current_user)
-    else:
-        return post_controller.search_by_category_and_date(category, date, db, current_user)
+# @router.get('/search', response_model=List[PostResponse])
+# def search_posts(category: Optional[str] = None, date: Optional[str] = None, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+#     if not category and not date:
+#         return post_controller.get_all(db, current_user)
+#     elif category and not date:
+#         return post_controller.search_category(category, db, current_user)
+#     elif date and not category:
+#         return post_controller.search_date(date, db, current_user)
+#     else:
+#         return post_controller.search_by_category_and_date(category, date, db, current_user)
+# @router.get('', response_model=List[PostResponse])
+# def search_posts(category: Optional[str] = None, date: Optional[str] = None, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+#     if not category and not date:
+#         return post_controller.get_all(db, current_user)
+#     elif category and not date:
+#         return post_controller.search_category(category, db, current_user)
+#     elif date and not category:
+#         return post_controller.search_date(date, db, current_user)
+#     else:
+#         return post_controller.search_by_category_and_date(category, date, db, current_user)
+    
+# @router.get('', response_model=List[PostResponse])
+# def posts(
+#     skip: int = Query(default=0),
+#     limit: int = Query(default=9),
+#     db: Session = Depends(get_db),
+#     current_user: UserAuth = Depends(get_current_user)
+# ):
+#     return post_controller.get_all(db, current_user, skip=skip, limit=limit)
+
+@router.get('', response_model=List[PostResponse])
+def unified_posts_handler(
+    category: Optional[str] = None,
+    date: Optional[str] = None,
+    skip: int = Query(default=0),
+    limit: int = Query(default=9),
+    db: Session = Depends(get_db),
+    current_user: UserAuth = Depends(get_current_user)
+):
+   return post_controller.get_all(db, current_user, category=category, date=date, skip=skip, limit=limit)

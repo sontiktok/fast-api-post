@@ -7,6 +7,7 @@ from services.s3_server import server_create_presigned_url
 from dotenv import load_dotenv
 import os
 from datetime import datetime,timedelta
+from typing import List, Optional
 
 load_dotenv()
 
@@ -58,13 +59,13 @@ def create(db: Session, request: PostRequest,current_user:UserAuth):
 #     return posts
 
 
-def get_all(db: Session, current_user: UserAuth, skip: int = 0, limit: int = 9):
-    posts = db.query(DbPost).offset(skip).limit(limit).all()
-    liked_post_ids = {like.postId for like in db.query(DBLike).filter(DBLike.userId == current_user.id).all()}
-    for post in posts:
-        post.bookmark = post.id in liked_post_ids
-        post.image_key = server_create_presigned_url(AWS_BUCKET, post.image_key)
-    return posts
+# def get_all(db: Session, current_user: UserAuth, skip: int = 0, limit: int = 9):
+#     posts = db.query(DbPost).offset(skip).limit(limit).all()
+#     liked_post_ids = {like.postId for like in db.query(DBLike).filter(DBLike.userId == current_user.id).all()}
+#     for post in posts:
+#         post.bookmark = post.id in liked_post_ids
+#         post.image_key = server_create_presigned_url(AWS_BUCKET, post.image_key)
+#     return posts
 
 def update(db: Session, post_id: int, request: PostRequest, current_user: UserAuth):
     post = db.query(DbPost).filter(DbPost.id == post_id, DbPost.user_id == current_user.id).first()
@@ -128,3 +129,25 @@ def search_by_category_and_date(category: str, date: str, db: Session, current_u
         post.image_key = server_create_presigned_url(AWS_BUCKET, post.image_key)
 
     return posts
+
+
+def get_all(db: Session, current_user: UserAuth, category: Optional[str] = None, date: Optional[str] = None, skip: int = 0, limit: int = 9):
+    query = db.query(DbPost)
+
+    if category:
+        query = query.filter(DbPost.category == category)
+
+    if date:
+        search_date = datetime.strptime(date, '%d-%m-%Y')
+        next_day = search_date + timedelta(days=1)
+        query = query.filter(DbPost.created_at < next_day)
+
+    posts = query.offset(skip).limit(limit).all()
+    liked_post_ids = {like.postId for like in db.query(DBLike).filter(DBLike.userId == current_user.id).all()}
+
+    for post in posts:
+        post.bookmark = post.id in liked_post_ids
+        post.image_key = server_create_presigned_url(AWS_BUCKET, post.image_key)
+
+    return posts
+
