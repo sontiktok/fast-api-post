@@ -48,3 +48,14 @@ def get_user_by_username(db: Session, username: str):
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
       detail=f'User with username {username} not found')
   return user
+
+def get_username_by_user_id(db: Session, user_id: int):
+    # Truy vấn lấy thông tin người dùng dựa trên user_id
+    user = db.query(DbUser).filter(DbUser.id == user_id).first()
+    if not user:
+        # Nếu không tìm thấy người dùng, ném ra HTTPException
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with user_id {user_id} not found")
+    # Trả về username của người dùng
+    return user.username
+    

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from db import models
 from db.database import engine
-from routers import user,post,s3_service,like
+from routers import user,post,s3_service,like,comment
 from auth import authentication
 from fastapi.middleware.cors import CORSMiddleware
 import bcrypt
@@ -12,6 +12,7 @@ app = FastAPI()
 app.include_router(user.router)
 app.include_router(post.router)
 app.include_router(like.router)
+app.include_router(comment.router)
 app.include_router(s3_service.router)
 app.include_router(authentication.router)
 
@@ -35,3 +36,4 @@ app.add_middleware(
 )
 '''Create db'''
 models.Base.metadata.create_all(engine)
+
